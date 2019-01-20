@@ -34,7 +34,7 @@ def search_products():
     rows = set(cur.fetchall())
     # putting into the right format
     for row in rows:
-        output.append({'id': row[0], 'title': row[1], 'price': row[2], 'inventory_count': row[3]})
+        output.append({'product_id': row[0], 'title': row[1], 'price': row[2], 'inventory_count': row[3]})
     return jsonify(output), 200
 
 
@@ -71,7 +71,7 @@ def create_shopping_cart():
 
 
 @app.route('/add_to_cart', methods=['PUT'])
-def add_to_chart():
+def add_to_cart():
     if len(request.data) == 0:
         return jsonify({'error': 'body is empty'}), 400
     body = json.loads(request.data)
@@ -173,24 +173,24 @@ def purchase_cart():
     # get items in cart
     query = 'SELECT product_id, item_count FROM items_in_cart WHERE cart_id = %s;'
     cur.execute(query, (cart_id,))
-    items_in_chart = cur.fetchall()
-    if not items_in_chart:
+    items_in_cart = cur.fetchall()
+    if not items_in_cart:
         return jsonify({'message': 'cart ' + str(cart_id) + ' is empty'}), 200
 
-    for item in items_in_chart:
+    for item in items_in_cart:
         query = 'SELECT inventory_count, title FROM products WHERE product_id = %s'
         cur.execute(query, (item[0],))
         info = cur.fetchall()
         if info[0][0] < item[1]:
             purchase_status[info[0][1]] = 'insufficient amount of ' + info[0][1] + ' in stock'
         else:
-            query_update = 'UPDATE products SET inventory_count = inventory_count - %s W%sHERE product_id = %s'
+            query_update = 'UPDATE products SET inventory_count = inventory_count - %s WHERE product_id = %s'
             cur.execute(query_update, (item[1], item[0],))
             conn.commit()
             purchase_status[info[0][1]] = 'complete'
 
     # update status
-    query = 'UPDATE shopping_cart SET purchase_status = TRUE WHERE cart_id = '
+    query = 'UPDATE shopping_cart SET purchase_status = TRUE WHERE cart_id = %s'
     cur.execute(query, (cart_id,))
     conn.commit()
     return jsonify(purchase_status), 200
