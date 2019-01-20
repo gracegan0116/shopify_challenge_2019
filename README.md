@@ -1,5 +1,7 @@
 # shopify_challenge_2019
 
+https://github.com/gracegan0116/shopify_challenge_2019
+
 ## Installation
 Postgres installation
 1. Install postgres [downloads](https://www.postgresql.org/download/)
